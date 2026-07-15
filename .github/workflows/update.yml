@@ -3,8 +3,8 @@ name: Update Restock Tracker
 on:
   push:
     paths:
-      - 'All_Orders_Rolling_Pre-Orders.xlsx'  # Excel 파일 변경 시에만 실행
-  workflow_dispatch:  # 수동 실행도 가능
+      - 'All Orders_Rolling Pre-Orders.xlsx'
+  workflow_dispatch:
 
 jobs:
   update:
@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -25,10 +25,14 @@ jobs:
       - name: Generate HTML
         run: python generate_html.py
 
-      - name: Upload to GCS
-        uses: google-github-actions/upload-cloud-storage@v1
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          credentials: ${{ secrets.GCS_SA_KEY }}
+          credentials_json: ${{ secrets.GCS_SA_KEY }}
+
+      - name: Upload to GCS
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
           path: restock_tracker.html
           destination: wholesale-us-map
           headers: |-
