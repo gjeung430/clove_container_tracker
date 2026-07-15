@@ -1,0 +1,35 @@
+name: Update Restock Tracker
+
+on:
+  push:
+    paths:
+      - 'All_Orders_Rolling_Pre-Orders.xlsx'  # Excel 파일 변경 시에만 실행
+  workflow_dispatch:  # 수동 실행도 가능
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate HTML
+        run: python generate_html.py
+
+      - name: Upload to GCS
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          credentials: ${{ secrets.GCS_SA_KEY }}
+          path: restock_tracker.html
+          destination: wholesale-us-map
+          headers: |-
+            content-type: text/html
